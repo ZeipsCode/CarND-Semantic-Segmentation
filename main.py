@@ -56,45 +56,52 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     """
     # TODO: Implement function
 
+    # examples from Q&A
     #conv_1x1 = tf.layers.conv2d(vgg_layer7_out, num_classes, 1,padding = 'same',
     #                            kernel_regularizer = tf.contrib.layers.l2_regularizer(1e-3) )
     #output = tf.layers.conv2d_transpose(conv_1x1, num_classes,4,2,padding = 'same',
     #                                    kernel_regularizer = tf.contrib.layers.l2_regularizer(1e-3))
 
     # 1x1 convolution of vgg layer 7
-    layer7a_out = tf.layers.conv2d(vgg_layer7_out, num_classes, 1, 
+    layer7_out = tf.layers.conv2d(vgg_layer7_out, num_classes, 1, 
                                    padding= 'same', 
                                    kernel_initializer= tf.random_normal_initializer(stddev=0.01),
                                    kernel_regularizer= tf.contrib.layers.l2_regularizer(1e-3))
-    # upsample
-    layer4a_in1 = tf.layers.conv2d_transpose(layer7a_out, num_classes, 4, 
+    
+    # upsampling of output from layer7_out
+    layer4_in1 = tf.layers.conv2d_transpose(layer7_out, num_classes, 4, 
                                              strides= (2, 2), 
                                              padding= 'same', 
                                              kernel_initializer= tf.random_normal_initializer(stddev=0.01), 
                                              kernel_regularizer= tf.contrib.layers.l2_regularizer(1e-3))
-    # make sure the shapes are the same!
-    # 1x1 convolution of vgg layer 4
-    layer4a_in2 = tf.layers.conv2d(vgg_layer4_out, num_classes, 1, 
+    
+    # 1x1 convolution of vgg layer 4_out
+    layer4_in2 = tf.layers.conv2d(vgg_layer4_out, num_classes, 1, 
                                    padding= 'same', 
                                    kernel_initializer= tf.random_normal_initializer(stddev=0.01), 
                                    kernel_regularizer= tf.contrib.layers.l2_regularizer(1e-3))
-    # skip connection (element-wise addition)
-    layer4a_out = tf.add(layer4a_in1, layer4a_in2)
-    # upsample
-    layer3a_in1 = tf.layers.conv2d_transpose(layer4a_out, num_classes, 4,  
+    
+    # element-wise addition of inputs from layers 4_in1 and 4_in2
+    layer4_out = tf.add(layer4_in1, layer4_in2)
+    
+    # upsampling of output from layer4_out
+    layer3_in1 = tf.layers.conv2d_transpose(layer4_out, num_classes, 4,  
                                              strides= (2, 2), 
                                              padding= 'same', 
                                              kernel_initializer= tf.random_normal_initializer(stddev=0.01), 
                                              kernel_regularizer= tf.contrib.layers.l2_regularizer(1e-3))
-    # 1x1 convolution of vgg layer 3
-    layer3a_in2 = tf.layers.conv2d(vgg_layer3_out, num_classes, 1, 
+    
+    # 1x1 convolution of vgg_layer3_out
+    layer3_in2 = tf.layers.conv2d(vgg_layer3_out, num_classes, 1, 
                                    padding= 'same', 
                                    kernel_initializer= tf.random_normal_initializer(stddev=0.01), 
                                    kernel_regularizer= tf.contrib.layers.l2_regularizer(1e-3))
-    # skip connection (element-wise addition)
-    layer3a_out = tf.add(layer3a_in1, layer3a_in2)
-    # upsample
-    nn_last_layer = tf.layers.conv2d_transpose(layer3a_out, num_classes, 16,  
+    
+    # skip connection (element-wise addition) of outputs from layer3_in1 and layer3_in2
+    layer3_out = tf.add(layer3_in1, layer3_in2)
+    
+    # upsampling of output from layer3_out -> final output of the network
+    nn_last_layer = tf.layers.conv2d_transpose(layer3_out, num_classes, 16,  
                                                strides= (8, 8), 
                                                padding= 'same', 
                                                kernel_initializer= tf.random_normal_initializer(stddev=0.01), 
@@ -114,16 +121,17 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     :param num_classes: Number of classes to classify
     :return: Tuple of (logits, train_op, cross_entropy_loss)
     """
-    # TODO: Implement function
+        # TODO: Implement function
     
-    # TODO: Implement function
-    # make logits a 2D tensor where each row represents a pixel and each column a class
     logits = tf.reshape(nn_last_layer, (-1, num_classes))
     correct_label = tf.reshape(correct_label, (-1,num_classes))
+    
     # define loss function
     cross_entropy_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits= logits, labels= correct_label))
+    
     # define training operation
     optimizer = tf.train.AdamOptimizer(learning_rate= learning_rate)
+    
     train_op = optimizer.minimize(cross_entropy_loss)
 
     return logits, train_op, cross_entropy_loss
@@ -184,10 +192,6 @@ def run():
         # OPTIONAL: Augment Images for better results
         #  https://datascience.stackexchange.com/questions/5224/how-to-prepare-augment-images-for-neural-network
 
-        # TODO: Build NN using load_vgg, layers, and optimize function
-        input_image, keep_prob,layer3_out, layer4_out, layer7_out = load_vgg(sess, vgg_path)
-        layers_output = layers(layer3_out, layer4_out, layer7_out, num_classes)
-
         # TODO: Train NN using the train_nn function
 
         # TODO: Save inference data using helper.save_inference_samples
@@ -216,9 +220,7 @@ def run():
         # TODO: Save inference data using helper.save_inference_samples
         helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input_image)
 
-# OPTIONAL: Apply the trained model to a video
-
-
+        # OPTIONAL: Apply the trained model to a video
 
 
 if __name__ == '__main__':
