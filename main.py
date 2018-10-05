@@ -204,7 +204,7 @@ def run():
         # OPTIONAL: Apply the trained model to a video
         
         epochs = 50
-        batch_size = 5
+        batch_size = 4
 
         # TF placeholders
         correct_label = tf.placeholder(tf.int32, [None, None, None, num_classes], name='correct_label')
