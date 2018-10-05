@@ -21,7 +21,7 @@ Download the [Kitti Road dataset](http://www.cvlibs.net/datasets/kitti/eval_road
     epsilon=1e-08)
 
 - Number of Epochs = 50
-- Batch Size = 16
+- Batch Size = 4 (memory issues prevented a higher batch size)
 
 
 
